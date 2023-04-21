@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { supabase } from '../lib/supabase';
 import ListItem from '../components/ListItem';
-import { PostgrestBuilder } from '@supabase/postgrest-js';
+import { PostgrestBuilder, PostgrestQueryBuilder } from '@supabase/postgrest-js';
 
 type ItemType = {
   id: string;
@@ -23,7 +23,7 @@ const ListContainer = styled.div`
 export default function Home() {
   const [data, setData] = useState<ItemType[]>([]);
 
-  useEffect(() => { 
+  useEffect(() => {
     async function fetchData() {
       const { data, error } = await supabase
         .from('websites')
@@ -43,7 +43,7 @@ export default function Home() {
   const handleUpvote = async (id: string) => {
     const { data, error } = await supabase
       .from('websites')
-      .update({ upvotes: PostgrestBuilder.raw('upvotes + 1') })
+      .update({ upvotes: ('upvotes + 1') })
       .eq('id', id);
   
     if (error) {
@@ -52,6 +52,8 @@ export default function Home() {
       setData(data ? (data as ItemType[]) : []);
     }
   };
+  
+
 
   return (
     <div>
