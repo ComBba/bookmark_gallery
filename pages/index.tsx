@@ -41,19 +41,58 @@ export default function Home() {
   }, []);
 
   const handleUpvote = async (id: string) => {
-    const { data, error } = await supabase
+    // Select a record from the "websites" table where "id" is equal to the given id
+    // Step 1: Select the record
+    const { data: selectedData, error: selectError } = await supabase
       .from('websites')
-      .update({ upvotes: ('upvotes + 1') })
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    // Check if there's an error and if the data exists
+    if (selectError) {
+      console.error('Error selecting record:', selectError);
+      return;
+    }
+
+    if (!selectedData) {
+      console.error('No data found for the given id:', id);
+      return;
+    }
+    console.log('Selected record:', selectedData);
+    console.log('selectedData.upvotes:', selectedData.upvotes);
+
+    // Step 2: Update the record
+    const { error: updateError } = await supabase
+      .from('websites')
+      .update({ upvotes: selectedData.upvotes + 1 })
       .eq('id', id);
-  
-    if (error) {
-      console.error('Error upvoting:', error);
+
+    if (updateError) {
+      console.error('Error upvoting record:', updateError);
+      return;
+    }
+
+    // Step 3: Fetch the updated record
+    const { data: updatedData, error: fetchError } = await supabase
+      .from('websites')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching updated record:', fetchError);
+      return;
+    }
+    console.log('Updated record:', updatedData);
+
+    if (updateError) {
+      console.error('Error upvoting record:', updateError);
+      return;
     } else {
       setData(data ? (data as ItemType[]) : []);
-    }
-  };
-  
-
+    };
+  }
 
   return (
     <div>
