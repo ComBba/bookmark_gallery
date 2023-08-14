@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { supabase } from '../lib/supabase';
 import ListItem from '../components/ListItem';
-import { PostgrestBuilder, PostgrestQueryBuilder } from '@supabase/postgrest-js';
 
 type ItemType = {
   id: string;
@@ -63,11 +62,13 @@ export default function Home() {
     console.log('selectedData.upvotes:', selectedData.upvotes);
 
     // Step 2: Update the record
+    // Update the 'upvotes' field of the 'websites' table by incrementing it by 1 for the record with the given 'id'
     const { error: updateError } = await supabase
       .from('websites')
       .update({ upvotes: selectedData.upvotes + 1 })
       .eq('id', id);
 
+    // If there is an error while updating the record, log the error to the console and return
     if (updateError) {
       console.error('Error upvoting record:', updateError);
       return;
