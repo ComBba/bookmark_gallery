@@ -1,5 +1,5 @@
 // located at /pages/[...genWord].tsx
-
+import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
@@ -14,6 +14,16 @@ type LinkData = {
 };
 
 export default function Redirect({ linkData }: { linkData: LinkData }) {
+    const router = useRouter();
+
+    useEffect(() => {
+        if (linkData.original_url) {
+            setTimeout(() => {
+                router.push(linkData.original_url);
+            }, 1000); // 1초 후 리다이렉트
+        }
+    }, [linkData, router]);
+
     return (
         <div>
             <Head>
@@ -45,14 +55,13 @@ export async function getServerSideProps(context: any) {
 
     if (data && data.original_url) {
         return {
-            redirect: {
-                destination: data.original_url,
-                permanent: false,
+            props: {
+                linkData: data,
             },
         };
     }
 
-    const linkData = data || {
+    const linkData = {
         original_url: '',
         website_title: '',
         website_locale: '',
