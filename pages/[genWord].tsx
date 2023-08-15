@@ -20,12 +20,12 @@ export default function Redirect({ linkData }: { linkData: LinkData }) {
         if (linkData.original_url) {
             setTimeout(() => {
                 router.push(linkData.original_url);
-            }, 1000); // 1초 후 리다이렉트
+            }, 3000); // 3초 후 리다이렉트
         }
     }, [linkData, router]);
 
     return (
-        <div>
+        <div className="flex justify-center items-center h-screen relative">
             <Head>
                 <meta property="og:url" content={linkData.original_url} />
                 <meta property="og:type" content="website" />
@@ -35,7 +35,9 @@ export default function Redirect({ linkData }: { linkData: LinkData }) {
                 <meta property="og:description" content={linkData.website_description} />
                 <meta property="og:site_name" content={linkData.site_name} />
             </Head>
-            Redirecting...
+            <div className="absolute animate-bounce">
+                Redirecting...
+            </div>
         </div>
     );
 }
