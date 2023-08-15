@@ -14,12 +14,6 @@ type LinkData = {
 };
 
 export default function Redirect({ linkData }: { linkData: LinkData }) {
-    const router = useRouter();
-
-    if (linkData.original_url) {
-        router.push(linkData.original_url);
-    }
-
     return (
         <div>
             <Head>
@@ -47,6 +41,15 @@ export async function getServerSideProps(context: any) {
     if (error) {
         console.error('Error fetching original URL:', error);
         return { notFound: true };
+    }
+
+    if (data && data.original_url) {
+        return {
+            redirect: {
+                destination: data.original_url,
+                permanent: false,
+            },
+        };
     }
 
     const linkData = data || {
