@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 type ShortenedLink = {
     original_url: string;
     genword: string;
+    summary?: string;
 };
 
 export default function Summar() {
@@ -28,13 +29,26 @@ export default function Summar() {
             generateShortLink(); // If genWord is duplicated, regenerate
             return;
         }
-        const { error } = await supabase.from('shortened_links').insert([
-            { original_url: url, genword: genWord }
-        ]);
-        if (error) {
-            console.error('Error inserting data:', error);
-        } else {
-            setShortenedLinks([...shortenedLinks, { original_url: url, genword: genWord }]);
+
+        try {
+            const response = await fetch('/api/summarize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url }),
+            });
+
+            const { summary } = await response.json();
+
+            const { error } = await supabase.from('shortened_links').insert([
+                { original_url: url, genword: genWord }
+            ]);
+            if (error) {
+                console.error('Error inserting data:', error);
+            } else {
+                setShortenedLinks([...shortenedLinks, { original_url: url, genword: genWord, summary }]);
+            }
+        } catch (error) {
+            console.error('Error generating summary:', error);
         }
     };
 
@@ -61,6 +75,7 @@ export default function Summar() {
                             <a href={`/${link.genword}`} target="_blank" rel="noopener noreferrer">
                                 {`/${link.genword}`}
                             </a>
+                            <p>{link.summary}</p> {/* 요약된 내용 표시 */}
                         </div>
                     ))}
                 </div>
