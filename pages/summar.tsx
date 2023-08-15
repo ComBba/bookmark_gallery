@@ -4,7 +4,11 @@ import { supabase } from '../lib/supabase';
 type ShortenedLink = {
     original_url: string;
     genword: string;
-    summary?: string;
+    website_title?: string;
+    website_locale?: string;
+    website_image?: string;
+    website_description?: string;
+    site_name?: string;
 };
 
 export default function Summar() {
@@ -37,15 +41,32 @@ export default function Summar() {
                 body: JSON.stringify({ url }),
             });
 
-            const { summary } = await response.json();
-
+            const { website_title, website_locale, website_image, website_description, site_name, } = await response.json();
+            console.log("[response.json()]", website_title, website_locale, website_image, website_description, site_name);
             const { error } = await supabase.from('shortened_links').insert([
-                { original_url: url, genword: genWord }
+                {
+                    original_url: url,
+                    genword: genWord,
+                    website_title,
+                    website_locale,
+                    website_image,
+                    website_description,
+                    site_name,
+                },
             ]);
+
             if (error) {
                 console.error('Error inserting data:', error);
             } else {
-                setShortenedLinks([...shortenedLinks, { original_url: url, genword: genWord, summary }]);
+                setShortenedLinks([...shortenedLinks, {
+                    original_url: url,
+                    genword: genWord,
+                    website_title,
+                    website_locale,
+                    website_image,
+                    website_description,
+                    site_name,
+                }]);
             }
         } catch (error) {
             console.error('Error generating summary:', error);
@@ -69,13 +90,20 @@ export default function Summar() {
                 >
                     Generate Short Link
                 </button>
-                <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {shortenedLinks.map(link => (
-                        <div key={link.genword} className="mb-2">
-                            <a href={`/${link.genword}`} target="_blank" rel="noopener noreferrer">
+                        <div key={link.genword} className="p-4 bg-white rounded shadow-md">
+                            <a href={`/${link.genword}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                                 {`/${link.genword}`}
                             </a>
-                            <p>{link.summary}</p> {/* 요약된 내용 표시 */}
+                            <p className="text-sm text-gray-600">{link.original_url}</p>
+                            <h2 className="text-lg font-bold mt-2">{link.website_title}</h2>
+                            <p className="text-sm text-gray-600">{link.website_locale}</p>
+                            <div className="mt-2">
+                                <img src={link.website_image} alt={link.website_title} className="w-full h-40 object-cover rounded" />
+                            </div>
+                            <p className="mt-2 text-gray-700">{link.website_description}</p>
+                            <p className="text-sm text-gray-600">{link.site_name}</p>
                         </div>
                     ))}
                 </div>
