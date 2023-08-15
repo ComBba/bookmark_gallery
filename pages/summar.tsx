@@ -1,3 +1,4 @@
+// located at /pages/index.tsx
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -14,6 +15,20 @@ type ShortenedLink = {
 export default function Summar() {
     const [url, setUrl] = useState('');
     const [shortenedLinks, setShortenedLinks] = useState<ShortenedLink[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [loadingDots, setLoadingDots] = useState(1);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (loading) {
+            interval = setInterval(() => {
+                setLoadingDots(prevDots => (prevDots % 5) + 1); // 1에서 5까지 순환
+            }, 1000);
+        } else {
+            setLoadingDots(1); // 로딩이 끝나면 초기화
+        }
+        return () => clearInterval(interval); // 컴포넌트 언마운트 시 타이머 정리
+    }, [loading]);
 
     useEffect(() => {
         async function fetchLinks() {
@@ -28,11 +43,11 @@ export default function Summar() {
     }, []);
 
     const generateShortLink = async () => {
-        const genWord = Math.random().toString(36).substr(2, 6);
-        if (shortenedLinks.some(link => link.genword === genWord)) {
-            generateShortLink(); // If genWord is duplicated, regenerate
-            return;
-        }
+        setLoading(true);
+        let genWord: string;
+        do {
+            genWord = Math.random().toString(36).substr(2, 6);
+        } while (shortenedLinks.some(link => link.genword === genWord));
 
         try {
             const response = await fetch('/api/summarize', {
@@ -71,6 +86,7 @@ export default function Summar() {
         } catch (error) {
             console.error('Error generating summary:', error);
         }
+        setLoading(false);
     };
 
     return (
@@ -87,8 +103,9 @@ export default function Summar() {
                 <button
                     className="p-2 bg-blue-500 text-white rounded"
                     onClick={generateShortLink}
+                    disabled={loading}
                 >
-                    Generate Short Link
+                    {loading ? `Generating${'.'.repeat(loadingDots)}` : 'Generate Short Link'}
                 </button>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {shortenedLinks.map(link => (
@@ -99,9 +116,11 @@ export default function Summar() {
                             <p className="text-sm text-gray-600">{link.original_url}</p>
                             <h2 className="text-lg font-bold mt-2">{link.website_title}</h2>
                             <p className="text-sm text-gray-600">{link.website_locale}</p>
-                            <div className="mt-2">
-                                <img src={link.website_image} alt={link.website_title} className="w-full h-40 object-cover rounded" />
-                            </div>
+                            {link.website_image && (
+                                <div className="mt-2">
+                                    <img src={link.website_image} alt={link.website_title} className="w-full h-40 object-cover rounded" />
+                                </div>
+                            )}
                             <p className="mt-2 text-gray-700">{link.website_description}</p>
                             <p className="text-sm text-gray-600">{link.site_name}</p>
                         </div>

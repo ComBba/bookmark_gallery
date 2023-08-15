@@ -8,7 +8,16 @@ import Head from 'next/head';
 export default function Redirect() {
     const router = useRouter();
     const { genWord } = router.query;
-    const [linkData, setLinkData] = useState({
+    type LinkData = {
+        original_url: string;
+        website_title: string;
+        website_locale: string;
+        website_image: string;
+        website_description: string;
+        site_name: string;
+    };
+
+    const [linkData, setLinkData] = useState<LinkData>({
         original_url: '',
         website_title: '',
         website_locale: '',
@@ -18,7 +27,7 @@ export default function Redirect() {
     });
 
     useEffect(() => {
-        async function redirect() {
+        async function fetchData() {
             if (typeof genWord === 'string') {
                 const { data, error } = await supabase
                     .from('shortened_links')
@@ -38,13 +47,17 @@ export default function Redirect() {
                         website_description: link.website_description,
                         site_name: link.site_name
                     });
-                    window.location.href = link.original_url;
                 }
             }
         }
-
-        redirect();
+        fetchData();
     }, [genWord]);
+
+    useEffect(() => {
+        if (linkData.original_url) {
+            router.push(linkData.original_url);
+        }
+    }, [linkData, router]);
 
     return (
         <div>
