@@ -69,7 +69,7 @@ async function getWebsiteContent(url: string) {
 
 let cntRetry = 0;
 // Function to create text completion using OpenAI API
-async function createUrlToSummarizeCompletion(text: string) {
+async function createUrlToSummarizeCompletion(text: string, userLocale: string) {
     try {
         const maxLength = 1000;
         const shortenedText = text.slice(0, maxLength);
@@ -82,18 +82,17 @@ async function createUrlToSummarizeCompletion(text: string) {
                 },
                 {
                     role: "user",
-                    content: `Please provide a brief and concise summary (less than 100 characters), OG tags. in English of the following website content, focusing on the main purpose and features of the site. Exclude any copyright information, contact details, and unrelated external website links: ${shortenedText}`,
+                    content: `The following is the text of the webpage. Excluding copyright information, contact details, and links to irrelevant external websites, you should provide a brief summary (no more than 100 characters) of the webpage content, focusing on the main purpose and features of the site, and the Open Graph meta tags [title, image, description, site_name] in language [${userLocale}]: ${shortenedText}`,
                 },
             ],
             functions: [
                 {
-                    name: "create_summary",
-                    description: "Create a summary and OG tags",
+                    name: "create_open_graph_protocol",
+                    description: "Create Open Graph META TAG",
                     parameters: {
                         type: "object",
                         properties: {
                             website_title: { type: "string" },
-                            website_locale: { type: "string" },
                             website_image: { type: "string" },
                             website_description: { type: "string" },
                             site_name: { type: "string" },
@@ -122,7 +121,7 @@ async function createUrlToSummarizeCompletion(text: string) {
             console.log('[OpenAI API] Estimated cost:', ((total_tokens / 1000) * 0.002).toFixed(8), 'USD'); // 토큰당 비용인 $0.002를 사용하여 비용 추정
             return {
                 website_title: fcArguments.website_title,
-                website_locale: fcArguments.website_locale,
+                website_locale: userLocale,
                 website_image: fcArguments.website_image,
                 website_description: fcArguments.website_description,
                 site_name: fcArguments.site_name,
@@ -131,7 +130,7 @@ async function createUrlToSummarizeCompletion(text: string) {
             console.error('No choices returned by OpenAI API');
             return {
                 website_title: '',
-                website_locale: '',
+                website_locale: userLocale,
                 website_image: '',
                 website_description: '',
                 site_name: '',
@@ -147,14 +146,14 @@ async function createUrlToSummarizeCompletion(text: string) {
             cntRetry = 0;
             return {
                 website_title: '',
-                website_locale: '',
+                website_locale: userLocale,
                 website_image: '',
                 website_description: '',
                 site_name: '',
             };
         }
         cntRetry += 1;
-        return createUrlToSummarizeCompletion(text);
+        return createUrlToSummarizeCompletion(text, userLocale);
     }
 }
 

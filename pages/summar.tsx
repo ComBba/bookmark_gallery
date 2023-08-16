@@ -48,12 +48,15 @@ export default function Summar() {
         do {
             genWord = Math.random().toString(36).substr(2, 6);
         } while (shortenedLinks.some(link => link.genword === genWord));
+    
+        // 사용자 브라우저의 로케일을 가져옵니다.
+        const userLocale = navigator.language || 'en_US';
 
         try {
             const response = await fetch('/api/summarize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url }),
+                body: JSON.stringify({ url, userLocale }),
             });
 
             const { website_title, website_locale, website_image, website_description, site_name, } = await response.json();
