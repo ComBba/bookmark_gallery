@@ -109,7 +109,7 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string) 
             presence_penalty: 0.5,
         });
         if (response.data && response.data.choices && response.data.choices.length > 0 && response.data.choices[0].message && response.data.choices[0].message.function_call && response.data.choices[0].message.function_call.arguments) {
-            console.log("[arguments]", response.data.choices[0].message.function_call.arguments);
+            console.log("[arguments]", { userLocale }, '\n', response.data.choices[0].message.function_call.arguments);
             // Return summary and usage statistics
             const fcArguments = JSON.parse(response.data.choices[0].message.function_call.arguments.trim());
             console.log('\n[OpenAI API] Summarized content:');
