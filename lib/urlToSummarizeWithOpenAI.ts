@@ -1,8 +1,9 @@
-// located at /lib/urlToSummarizeWithOpenAI.js
-const axios = require('axios');
-const cheerio = require('cheerio');
-const { Configuration, OpenAIApi } = require('openai');
-const { sleep } = require('../tools/utils.js');
+// located at /lib/urlToSummarizeWithOpenAI.ts
+
+import axios from 'axios';
+import cheerio from 'cheerio';
+import { Configuration, OpenAIApi } from 'openai';
+import { sleep } from '../tools/utils';
 
 // Set up OpenAI API configuration
 const configuration = new Configuration({
@@ -13,8 +14,8 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // Function to fetch website content
-async function getWebsiteContent(url) {
-    let response = null
+async function getWebsiteContent(url: string) {
+    let response = null;
 
     try {
         response = await axios.get(url);
@@ -24,13 +25,13 @@ async function getWebsiteContent(url) {
         $('script, style, noscript, iframe, img, svg, video').remove();
 
         // Extract meta description and text from the HTML
-        const titleText = $('head title')?.text();
-        const metaDescription = $('meta[name="description"]')?.attr('content');
-        const metaKeywords = $('meta[name="keywords"]')?.attr('content');
-        const ogTitle = $('meta[name="og:title"]')?.attr('content');
-        const ogDescription = $('meta[name="og:description"]')?.attr('content');
-        const twitterTitle = $('meta[name="twitter:title"]')?.attr('content');
-        const twitterDescription = $('meta[name="twitter:description"]')?.attr('content');
+        const titleText = $('head title')?.text() || '';
+        const metaDescription = $('meta[name="description"]')?.attr('content') || '';
+        const metaKeywords = $('meta[name="keywords"]')?.attr('content') || '';
+        const ogTitle = $('meta[name="og:title"]')?.attr('content') || '';
+        const ogDescription = $('meta[name="og:description"]')?.attr('content') || '';
+        const twitterTitle = $('meta[name="twitter:title"]')?.attr('content') || '';
+        const twitterDescription = $('meta[name="twitter:description"]')?.attr('content') || '';
         console.log('\nURL: ', url);
         console.log('title:', titleText);
 
@@ -46,7 +47,7 @@ async function getWebsiteContent(url) {
         console.log('content:', contents);
         const imageData = "";
         return { contents, imageData };
-    } catch (error) {
+    } catch (error: any) {
         response = error.response;
         console.error(`Error fetching content from ${url}:`, response);
     } finally {
@@ -68,7 +69,7 @@ async function getWebsiteContent(url) {
 
 let cntRetry = 0;
 // Function to create text completion using OpenAI API
-async function createUrlToSummarizeCompletion(text) {
+async function createUrlToSummarizeCompletion(text: string) {
     try {
         const maxLength = 1000;
         const shortenedText = text.slice(0, maxLength);
@@ -108,16 +109,17 @@ async function createUrlToSummarizeCompletion(text) {
             frequency_penalty: 0.5,
             presence_penalty: 0.5,
         });
-        console.log("[arguments]", response.data.choices[0].message.function_call.arguments);
-        if (response.data.choices && response.data.choices.length > 0 && response.data.choices[0].message && response.data.choices[0].message.function_call && response.data.choices[0].message.function_call.arguments) {
+        if (response.data && response.data.choices && response.data.choices.length > 0 && response.data.choices[0].message && response.data.choices[0].message.function_call && response.data.choices[0].message.function_call.arguments) {
+            console.log("[arguments]", response.data.choices[0].message.function_call.arguments);
             // Return summary and usage statistics
             const fcArguments = JSON.parse(response.data.choices[0].message.function_call.arguments.trim());
             console.log('\n[OpenAI API] Summarized content:');
             console.log("[arguments]", fcArguments);
-            console.log('[OpenAI API] Prompt tokens:', response.data.usage.prompt_tokens);
-            console.log('[OpenAI API] Completion tokens:', response.data.usage.completion_tokens);
-            console.log('[OpenAI API] Total tokens used:', response.data.usage.total_tokens);
-            console.log('[OpenAI API] Estimated cost:', ((response.data.usage.total_tokens / 1000) * 0.002).toFixed(8), 'USD'); // 토큰당 비용인 $0.002를 사용하여 비용 추정
+            console.log('[OpenAI API] Prompt tokens:', response.data.usage?.prompt_tokens);
+            console.log('[OpenAI API] Completion tokens:', response.data.usage?.completion_tokens);
+            let total_tokens = response.data.usage?.total_tokens || 0;
+            console.log('[OpenAI API] Total tokens used:', total_tokens);
+            console.log('[OpenAI API] Estimated cost:', ((total_tokens / 1000) * 0.002).toFixed(8), 'USD'); // 토큰당 비용인 $0.002를 사용하여 비용 추정
             return {
                 website_title: fcArguments.website_title,
                 website_locale: fcArguments.website_locale,
@@ -135,9 +137,9 @@ async function createUrlToSummarizeCompletion(text) {
                 site_name: '',
             };
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error using OpenAI API:', error.response == undefined ? error : error.response);
-        for (cntTimeout = 15; cntTimeout > 0; cntTimeout--) {
+        for (let cntTimeout = 15; cntTimeout > 0; cntTimeout--) {
             await sleep(1 * 1000); // 1초 대기
             console.log(cntTimeout, "초...");
         }
@@ -156,7 +158,7 @@ async function createUrlToSummarizeCompletion(text) {
     }
 }
 
-module.exports = {
+export {
     getWebsiteContent,
     createUrlToSummarizeCompletion
 };
