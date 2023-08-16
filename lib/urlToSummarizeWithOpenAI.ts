@@ -90,7 +90,7 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string):
                 },
                 {
                     role: "user",
-                    content: `The following is the text of the webpage. Excluding copyright information, contact details, and links to irrelevant external websites, you should provide a brief summary (no more than 100 characters) of the webpage content, focusing on the main purpose and features of the site, and the Open Graph meta tags [title, image, description, site_name] in language [${userLocale}]: ${shortenedText}`,
+                    content: `The following is the text of the webpage. Excluding copyright information, contact details, and links to irrelevant external websites, you must provide a brief summary (no more than 100 characters) of the webpage content, focusing on the main purpose and features of the site, and the Open Graph meta tags [title, original og:image, description, site_name] in the language of the following browser locale [${userLocale}]: ${shortenedText}`,
                 },
             ],
             functions: [
