@@ -80,8 +80,13 @@ let cntRetry = 0;
 // Function to create text completion using OpenAI API
 async function createUrlToSummarizeCompletion(text: string, userLocale: string): Promise<CreateUrlToSummarizeCompletionResult> {
     try {
-        const language = userLocale != undefined && userLocale.length > 3 ? LanguageTags.language(userLocale.split('-')[0]) : 'en';
-        const displayName = language.descriptions()[0]; // "Korean"
+        let language = userLocale && userLocale != undefined && userLocale.length > 3 ? LanguageTags.language(userLocale.split('-')[0]) : null;
+        let displayName = 'English'; // Default language name
+
+        if (language && language.descriptions().length > 0) {
+            displayName = language.descriptions()[0]; // "Korean" or other language name
+        }
+
         const maxLength = 1000;
         const shortenedText = text.slice(0, maxLength);
         const response = await openai.createChatCompletion({
@@ -112,7 +117,7 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string):
                 },
             ],
             temperature: 1.2,
-            max_tokens: 2048,
+            max_tokens: 1200,
             top_p: 0.8,
             n: 1,
             stop: "None",
