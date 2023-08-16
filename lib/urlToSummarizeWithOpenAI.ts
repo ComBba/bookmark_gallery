@@ -22,16 +22,6 @@ type CreateUrlToSummarizeCompletionResult = {
     site_name: string;
 };
 
-async function fetchOpenGraphImage(title: string, description: string): Promise<string> {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/og`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description }),
-    });
-    return response.url; // 이미지 URL 반환
-}
-
-
 // Function to fetch website content
 async function getWebsiteContent(url: string) {
     let response = null;
@@ -145,15 +135,11 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string):
             let total_tokens = response.data.usage?.total_tokens || 0;
             console.log('[OpenAI API] Total tokens used:', total_tokens);
             console.log('[OpenAI API] Estimated cost:', ((total_tokens / 1000) * 0.002).toFixed(8), 'USD'); // 토큰당 비용인 $0.002를 사용하여 비용 추정
-            const websiteTitle = fcArguments.website_title;
-            const websiteDescription = fcArguments.website_description;
-            const websiteImage = await fetchOpenGraphImage(websiteTitle, websiteDescription); // Open Graph 이미지 가져오기
-
             return {
-                website_title: websiteTitle,
+                website_title: fcArguments.website_title,
                 website_locale: userLocale,
-                website_image: websiteImage,
-                website_description: websiteDescription,
+                website_image: fcArguments.website_image,
+                website_description: fcArguments.website_description,
                 site_name: fcArguments.site_name,
             };
         } else {
