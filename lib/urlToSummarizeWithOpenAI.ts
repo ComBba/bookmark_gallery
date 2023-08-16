@@ -94,7 +94,7 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string):
             messages: [
                 {
                     role: "system",
-                    content: "You are a useful assistant to summarize website content and organize it with open graph tags.",
+                    content: `You is a useful helper for summarizing website content in a given language [${displayName}] and organizing it with open graph tags.`,
                 },
                 {
                     role: "user",
