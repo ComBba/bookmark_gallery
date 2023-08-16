@@ -53,7 +53,7 @@ async function getWebsiteContent(url: string) {
             contents = "".concat(titleText, "/n", metaDescription, "/n", $('body').text().replace(/\s\s+/g, ' ').trim());
         }
 
-        console.log('content:', contents);
+        //console.log('content:', contents);
         const imageData = "";
         return { contents, imageData };
     } catch (error: any) {
@@ -86,7 +86,7 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string):
         if (language && language.descriptions().length > 0) {
             displayName = language.descriptions()[0]; // "Korean" or other language name
         }
-
+        console.log('[language]', language, '\t[displayName]', displayName);
         const maxLength = 1000;
         const shortenedText = text.slice(0, maxLength);
         const response = await openai.createChatCompletion({
@@ -94,11 +94,11 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string):
             messages: [
                 {
                     role: "system",
-                    content: "You are a helpful assistant that summarizes and organizes website content.",
+                    content: "You are a useful assistant to summarize website content and organize it with open graph tags.",
                 },
                 {
                     role: "user",
-                    content: `The following is the text of the webpage. Excluding copyright information, contact details, and links to irrelevant external websites, you must provide a brief summary (no more than 100 characters) of the webpage content, focusing on the main purpose and features of the site, and the Open Graph meta tags [title, original og:image, description, site_name] in ${displayName}. : ${shortenedText}`,
+                    content: `In the provided webpage, excluding copyright information, contact information, address, and links to external websites, a brief summary (no more than 100 characters) of the main purpose and features of the webpage content should be written in ${displayName} language using the Open Graph meta tags [title, original og:image, description, site_name]: ${shortenedText}`,
                 },
             ],
             functions: [
@@ -125,11 +125,11 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string):
             presence_penalty: 0.5,
         });
         if (response.data && response.data.choices && response.data.choices.length > 0 && response.data.choices[0].message && response.data.choices[0].message.function_call && response.data.choices[0].message.function_call.arguments) {
-            console.log("[arguments]", { userLocale }, '\n', response.data.choices[0].message.function_call.arguments);
+            //console.log("[arguments]", { userLocale }, '\n', response.data.choices[0].message.function_call.arguments);
             // Return summary and usage statistics
             const fcArguments = JSON.parse(response.data.choices[0].message.function_call.arguments.trim());
             console.log('\n[OpenAI API] Summarized content:');
-            console.log("[arguments]", fcArguments);
+            console.log("[arguments]", { userLocale }, '\n', fcArguments);
             console.log('[OpenAI API] Prompt tokens:', response.data.usage?.prompt_tokens);
             console.log('[OpenAI API] Completion tokens:', response.data.usage?.completion_tokens);
             let total_tokens = response.data.usage?.total_tokens || 0;
