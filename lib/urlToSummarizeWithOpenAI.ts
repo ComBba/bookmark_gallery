@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import cheerio from 'cheerio';
+import LanguageTags from 'language-tags';
 import { Configuration, OpenAIApi } from 'openai';
 import { sleep } from '../tools/utils';
 
@@ -79,6 +80,8 @@ let cntRetry = 0;
 // Function to create text completion using OpenAI API
 async function createUrlToSummarizeCompletion(text: string, userLocale: string): Promise<CreateUrlToSummarizeCompletionResult> {
     try {
+        const language = userLocale != undefined && userLocale.length > 3 ? LanguageTags.language(userLocale.split('-')[0]) : 'en';
+        const displayName = language.descriptions()[0]; // "Korean"
         const maxLength = 1000;
         const shortenedText = text.slice(0, maxLength);
         const response = await openai.createChatCompletion({
@@ -90,7 +93,7 @@ async function createUrlToSummarizeCompletion(text: string, userLocale: string):
                 },
                 {
                     role: "user",
-                    content: `The following is the text of the webpage. Excluding copyright information, contact details, and links to irrelevant external websites, you must provide a brief summary (no more than 100 characters) of the webpage content, focusing on the main purpose and features of the site, and the Open Graph meta tags [title, original og:image, description, site_name] in the language of the following browser locale [${userLocale}]: ${shortenedText}`,
+                    content: `The following is the text of the webpage. Excluding copyright information, contact details, and links to irrelevant external websites, you must provide a brief summary (no more than 100 characters) of the webpage content, focusing on the main purpose and features of the site, and the Open Graph meta tags [title, original og:image, description, site_name] in ${displayName}. : ${shortenedText}`,
                 },
             ],
             functions: [
