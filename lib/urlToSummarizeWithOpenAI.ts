@@ -13,6 +13,14 @@ const configuration = new Configuration({
 // Create OpenAI API instance
 const openai = new OpenAIApi(configuration);
 
+type CreateUrlToSummarizeCompletionResult = {
+    website_title: string;
+    website_locale: string;
+    website_image: string;
+    website_description: string;
+    site_name: string;
+};
+
 // Function to fetch website content
 async function getWebsiteContent(url: string) {
     let response = null;
@@ -69,7 +77,7 @@ async function getWebsiteContent(url: string) {
 
 let cntRetry = 0;
 // Function to create text completion using OpenAI API
-async function createUrlToSummarizeCompletion(text: string, userLocale: string) {
+async function createUrlToSummarizeCompletion(text: string, userLocale: string): Promise<CreateUrlToSummarizeCompletionResult> {
     try {
         const maxLength = 1000;
         const shortenedText = text.slice(0, maxLength);
